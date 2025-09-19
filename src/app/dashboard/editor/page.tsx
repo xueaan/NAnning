@@ -1,202 +1,144 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Save, Download, Upload, FileText, Code, Type } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import StarterKit from '@tiptap/starter-kit';
+import { generateJSON, JSONContent } from '@tiptap/core';
+import { fadeInVariants } from '@/config/animation';
+import { SimpleEditor } from '@/modules/editor/SimpleEditor';
+import { Copy, RefreshCw } from 'lucide-react';
 
-// 动态导入统一编辑器，避免 SSR 问题
-const UnifiedEditor = dynamic(
-  () => import('@/modules/editor/UnifiedEditor').then((mod) => mod.UnifiedEditor),
-  { ssr: false }
-);
+const initialContent = `
+  <h1>编辑器调试面板</h1>
+  <p>这是一个基于 <strong>Tiptap 3</strong> 的调试工作台，你可以在左侧编辑富文本，右侧实时查看 HTML 以及 JSON 文档结构。</p>
+  <ul>
+    <li>支持基础排版、标题、列表、引用等 StarterKit 能力。</li>
+    <li>右边的 VSCode 风格卡片会自动同步 HTML 字符串与 JSON AST。</li>
+    <li>点击右上角的按钮可以快速复制当前内容，或恢复默认样例。</li>
+  </ul>
+`;
 
-export default function EditorPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const docId = searchParams.get('id');
+const formatter = new Intl.DateTimeFormat('zh-CN', {
+  hour12: false,
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+});
 
-  const [content, setContent] = useState('');
-  const [title, setTitle] = useState('Untitled Document');
-  const [editorMode, setEditorMode] = useState<'richtext' | 'code' | 'markdown'>('richtext');
-  const [currentLanguage, setCurrentLanguage] = useState('javascript');
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [documentId, setDocumentId] = useState(docId);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+export default function EditorDebugPage() {
+  const extensions = useMemo(() => [StarterKit.configure({ heading: { levels: [1, 2, 3, 4] } })], []);
+  const [html, setHtml] = useState(initialContent.trim());
+  const [json, setJson] = useState<JSONContent>(() => generateJSON(initialContent, extensions));
+  const [lastUpdate, setLastUpdate] = useState(() => formatter.format(new Date()));
+  const [panelTab, setPanelTab] = useState<'html' | 'json' | 'preview'>('html');
 
-  // Load document if ID is provided
-  useEffect(() => {
-    if (docId) {
-      loadDocument(docId);
-    }
-  }, [docId]);
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (!autoSaveEnabled || !hasUnsavedChanges || isSaving) return;
-
-    const timer = setTimeout(() => {
-      handleSave();
-    }, 3000); // Auto-save after 3 seconds of inactivity
-
-    return () => clearTimeout(timer);
-  }, [content, title, hasUnsavedChanges, autoSaveEnabled]);
-
-  // Track changes
-  useEffect(() => {
-    setHasUnsavedChanges(true);
-  }, [content, title]);
-
-  const loadDocument = async (id: string) => {
-    try {
-      const result = await (window as any).electron.db.getDocument(id);
-      if (result.success && result.data) {
-        setTitle(result.data.title);
-        setContent(result.data.content || '');
-        setEditorMode(result.data.type || 'richtext');
-        setCurrentLanguage(result.data.language || 'javascript');
-        setDocumentId(id);
-      }
-    } catch (error) {
-      console.error('Failed to load document:', error);
-    }
+  const handleReset = () => {
+    setHtml(initialContent.trim());
+    setJson(generateJSON(initialContent, extensions));
+    setLastUpdate(formatter.format(new Date()));
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
+  useEffect(() => {
+    setLastUpdate(formatter.format(new Date()));
+  }, [panelTab]);
+
+  const handleCopy = async (text: string) => {
     try {
-      if (documentId) {
-        // Update existing document
-        const result = await (window as any).electron.db.updateDocument(documentId, {
-          title,
-          content,
-          type: editorMode,
-          language: currentLanguage,
-        });
-        if (result.success) {
-          setLastSaved(new Date());
-          setHasUnsavedChanges(false);
-        }
-      } else {
-        // Create new document
-        const newId = `doc_${Date.now()}`;
-        const result = await (window as any).electron.db.createDocument({
-          id: newId,
-          title,
-          content,
-          type: editorMode,
-          language: currentLanguage,
-        });
-        if (result.success) {
-          setDocumentId(newId);
-          setLastSaved(new Date());
-          setHasUnsavedChanges(false);
-          // Update URL to include the new document ID
-          router.push(`/dashboard/editor?id=${newId}`);
-        }
-      }
+      await navigator.clipboard.writeText(text);
     } catch (error) {
-      console.error('Failed to save document:', error);
-    } finally {
-      setIsSaving(false);
+      console.warn('复制失败', error);
     }
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Editor Header */}
-      <div className="glass border-b border-white/10 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="text-xl font-semibold text-white bg-transparent border-b border-white/20 focus:border-purple-400 outline-none px-2 py-1"
-              placeholder="Document Title"
-            />
-            {editorMode === 'code' && (
-              <select
-                value={currentLanguage}
-                onChange={(e) => setCurrentLanguage(e.target.value)}
-                className="px-3 py-1 bg-gray-800 text-gray-300 rounded-lg text-sm border border-gray-700"
+    <motion.div
+      variants={fadeInVariants}
+      initial="initial"
+      animate="animate"
+      className="h-full overflow-y-auto p-6"
+    >
+      <div className="max-w-6xl mx-auto space-y-6">
+        <header className="surface-base border border-border/20 rounded-2xl px-6 py-5 theme-shadow">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-foreground/60">模块 / 编辑器调试</p>
+              <h1 className="text-3xl font-semibold text-foreground">富文本工作台</h1>
+              <p className="text-sm text-foreground/60 mt-1">实时体验 Tiptap 3 编辑能力与生成结果</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleReset}
+                className="surface-light border border-border/30 px-3 py-2 rounded-lg text-sm text-foreground/70 hover:text-foreground hover:border-primary/50 transition"
               >
-                <option value="javascript">JavaScript</option>
-                <option value="typescript">TypeScript</option>
-                <option value="python">Python</option>
-                <option value="rust">Rust</option>
-                <option value="java">Java</option>
-                <option value="cpp">C++</option>
-                <option value="html">HTML</option>
-                <option value="css">CSS</option>
-                <option value="json">JSON</option>
-                <option value="sql">SQL</option>
-                <option value="markdown">Markdown</option>
-              </select>
-            )}
+                <RefreshCw className="w-4 h-4 inline mr-1" /> 恢复示例
+              </button>
+              <button
+                onClick={() => handleCopy(json ? JSON.stringify(json, null, 2) : html)}
+                className="surface-light border border-border/30 px-3 py-2 rounded-lg text-sm text-foreground/70 hover:text-foreground hover:border-primary/50 transition"
+              >
+                <Copy className="w-4 h-4 inline mr-1" /> 复制当前
+              </button>
+            </div>
           </div>
+        </header>
 
-          <div className="flex items-center space-x-2">
-            <button
-              className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-all"
-              title="Upload"
-            >
-              <Upload className="w-5 h-5" />
-            </button>
-            <button
-              className="p-2 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition-all"
-              title="Download"
-            >
-              <Download className="w-5 h-5" />
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-4 py-2 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg text-purple-400 transition-all flex items-center space-x-2 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              <span>{isSaving ? 'Saving...' : 'Save'}</span>
-            </button>
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-6">
+          <SimpleEditor
+            content={html}
+            onUpdate={({ html, json }) => {
+              setHtml(html);
+              setJson(json);
+              setLastUpdate(formatter.format(new Date()));
+            }}
+          />
+
+          <div className="surface-base border border-border/20 rounded-2xl theme-shadow flex flex-col">
+            <div className="border-b border-border/20 px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-foreground/70">
+                <span>同步监视器</span>
+                <span className="text-foreground/40">最近更新 · {lastUpdate}</span>
+              </div>
+              <div className="flex gap-1">
+                {[
+                  { key: 'html', label: 'HTML' },
+                  { key: 'json', label: 'JSON' },
+                  { key: 'preview', label: '预览' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setPanelTab(tab.key as typeof panelTab)}
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-all ${
+                      panelTab === tab.key
+                        ? 'bg-primary/20 text-foreground'
+                        : 'hover:bg-primary/10 text-foreground/60'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto">
+              {panelTab === 'preview' && (
+                <div className="prose prose-invert max-w-none px-6 py-5" dangerouslySetInnerHTML={{ __html: html }} />
+              )}
+
+              {panelTab === 'html' && (
+                <pre className="whitespace-pre-wrap break-words px-6 py-5 text-xs font-mono text-foreground/80">
+                  {html}
+                </pre>
+              )}
+
+              {panelTab === 'json' && (
+                <pre className="whitespace-pre px-6 py-5 text-xs font-mono text-foreground/80 overflow-x-auto">
+                  {JSON.stringify(json, null, 2)}
+                </pre>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Editor Content */}
-      <div className="flex-1 p-6 overflow-auto">
-        <UnifiedEditor
-          value={content}
-          onChange={setContent}
-          mode={editorMode}
-          language={currentLanguage}
-          theme="dark"
-          height="calc(100% - 100px)"
-          showToolbar={true}
-        />
-      </div>
-
-      {/* Status Bar */}
-      <div className="glass border-t border-white/10 px-4 py-2">
-        <div className="flex items-center justify-between text-xs text-gray-400">
-          <div className="flex items-center space-x-4">
-            <span>Mode: {editorMode}</span>
-            <span>Words: {content.split(/\s+/).filter(Boolean).length}</span>
-            <span>Characters: {content.length}</span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setAutoSaveEnabled(!autoSaveEnabled)}
-              className="text-xs hover:text-purple-400 transition-colors"
-            >
-              Auto-save: {autoSaveEnabled ? 'Enabled' : 'Disabled'}
-            </button>
-            <span className={hasUnsavedChanges ? 'text-yellow-400' : ''}>
-              {hasUnsavedChanges ? '• Unsaved changes' : `Last saved: ${lastSaved ? lastSaved.toLocaleTimeString() : 'Never'}`}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </motion.div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { CodeEditor } from './CodeEditor';
 import { SimpleEditor } from './SimpleEditor';
 import { Code, FileText, Eye, EyeOff, Maximize2, Minimize2 } from 'lucide-react';
@@ -30,6 +31,7 @@ export function UnifiedEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [content, setContent] = useState(value);
+  const safePreviewHtml = useMemo(() => DOMPurify.sanitize(content), [content]);
 
   useEffect(() => {
     setContent(value);
@@ -77,7 +79,7 @@ export function UnifiedEditor({
         return (
           <div
             className="prose prose-invert max-w-none p-4"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: safePreviewHtml }}
           />
         );
       default:

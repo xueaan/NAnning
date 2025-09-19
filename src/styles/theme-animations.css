@@ -1,0 +1,215 @@
+/* Theme Transition Animations */
+
+/* Gradient background transition */
+.theme-transition {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--gradient, linear-gradient(135deg, #232333 0%, #161621 100%));
+  background-size: 210% 210%;
+}
+
+.theme-transition.active {
+  opacity: 1;
+}
+
+/* Smooth gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Pulse effect for theme change */
+@keyframes themePulse {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Glass morphing effect */
+@keyframes glassMorph {
+  0% {
+    backdrop-filter: blur(0px);
+    background: rgba(255, 255, 255, 0);
+  }
+  50% {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  100% {
+    backdrop-filter: blur(var(--glass-blur));
+    background: rgba(255, 255, 255, var(--glass-opacity));
+  }
+}
+
+/* Color transition for elements */
+.color-transition {
+  transition:
+    color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Background gradient transition */
+.gradient-bg {
+  background-size: 200% 200%;
+  animation: gradientShift 18s ease infinite;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Theme switch animation wrapper */
+.theme-switch-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--bg-overlay-color, var(--background, 0 0 0)) / var(--bg-overlay-opacity, 0));
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.theme-noise-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: var(--noise-opacity, 0);
+  mix-blend-mode: overlay;
+  background-size: 160px 160px;
+  background-repeat: repeat;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-switch-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--gradient);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease-out, height 0.6s ease-out;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+.theme-switch-wrapper.switching::before {
+  width: 300vmax;
+  height: 300vmax;
+}
+
+/* Ripple effect for theme buttons */
+.theme-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgb(var(--accent, 255 255 255) / 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.theme-button:active::after {
+  width: 100%;
+  height: 100%;
+  transition: width 0.3s, height 0.3s;
+}
+
+/* Stagger animation for preset themes */
+.theme-preset-item {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.4s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-preset-item:nth-child(1) { animation-delay: 0.05s; }
+.theme-preset-item:nth-child(2) { animation-delay: 0.1s; }
+.theme-preset-item:nth-child(3) { animation-delay: 0.15s; }
+.theme-preset-item:nth-child(4) { animation-delay: 0.2s; }
+.theme-preset-item:nth-child(5) { animation-delay: 0.25s; }
+.theme-preset-item:nth-child(6) { animation-delay: 0.3s; }
+.theme-preset-item:nth-child(7) { animation-delay: 0.35s; }
+.theme-preset-item:nth-child(8) { animation-delay: 0.4s; }
+.theme-preset-item:nth-child(9) { animation-delay: 0.45s; }
+.theme-preset-item:nth-child(10) { animation-delay: 0.5s; }
+.theme-preset-item:nth-child(11) { animation-delay: 0.55s; }
+.theme-preset-item:nth-child(12) { animation-delay: 0.6s; }
+
+/* Smooth transitions for theme-affected elements */
+.theme-switch-wrapper * {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Special glass panel animation */
+.glass {
+  transition:
+    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading shimmer for theme changes */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.theme-loading {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}

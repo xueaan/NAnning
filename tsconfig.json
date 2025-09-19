@@ -41,8 +41,9 @@
   },
   "include": [
     "electron/**/*",
+    "out/types/**/*.ts",
     "src/**/*",
-    "out/types/**/*.ts"
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

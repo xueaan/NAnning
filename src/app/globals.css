@@ -1,86 +1,230 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import '../styles/theme-animations.css';
+@import '../styles/glass.css';
 
-/* 自定义 CSS 变量 */
+/* Theme tokens hydrated by ThemeEngine */
 :root {
-  --background: 10 10 15;
-  --foreground: 240 240 245;
+  --background: 18 18 24;
+  --foreground: 236 236 244;
   --primary: 147 51 234;
   --secondary: 240 147 251;
   --accent: 245 87 108;
-  --muted: 30 30 40;
-  --border: 40 40 60;
+  --muted: 40 41 55;
+  --border: 72 74 96;
+
+  --glass-opacity: 0.22;
+  --glass-blur: 18px;
+  --glass-border-opacity: 0.18;
+
+  --shadow-strength: 0.28;
+  --shadow-color: 12 18 32;
+
+  --surface-base-opacity: calc(var(--glass-opacity) + 0.24);
+  --surface-strong-opacity: calc(var(--glass-opacity) + 0.36);
+  --surface-light-opacity: calc(var(--glass-opacity) + 0.14);
+  --surface-border-strength: calc(var(--glass-border-opacity) + 0.12);
+
+  --accent-soft: color-mix(in srgb, rgb(var(--accent) / 1) 20%, transparent);
+  --accent-ring: color-mix(in srgb, rgb(var(--primary) / 1) 55%, rgb(var(--secondary) / 1) 45%);
 }
 
-/* Anning 风格渐变背景 */
+body.theme-light {
+  --shadow-strength: 0.18;
+  --shadow-color: 32 38 68;
+}
+
+body.theme-dark {
+  --shadow-strength: 0.36;
+  --shadow-color: 3 6 18;
+}
+
+/* Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--background) / 1);
+  color: rgb(var(--foreground) / 0.95);
+  transition:
+    background 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  font-feature-settings: 'liga' 1, 'kern' 1;
+}
+
+::selection {
+  background: rgb(var(--primary) / 0.25);
+  color: rgb(var(--foreground) / 1);
+}
+
+/* Gradient backdrop */
 .gradient-bg {
-  background: linear-gradient(135deg,
-    #ffecd2 0%,
-    #fcb69f 20%,
-    #ff9a9e 40%,
-    #fad0c4 60%,
-    #c1c8e4 80%,
-    #84ceeb 100%
+  position: relative;
+  background: var(
+    --gradient,
+    linear-gradient(
+      135deg,
+      #1a0707 0%,
+      #2d1810 20%,
+      #3d1a2f 40%,
+      #2a1a3d 60%,
+      #1a1a3d 80%,
+      #0f0f2d 100%
+    )
   );
-  background-size: 300% 300%;
-  animation: gradientShift 15s ease infinite;
+  background-size: 220% 220%;
+  animation: gradientShift 22s ease-in-out infinite;
+  color: inherit;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+.theme-switch-wrapper {
+  isolation: isolate;
 }
 
-/* 毛玻璃效果 - Anning 风格 */
-.glass {
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+/* Surface helpers */
+.surface-base {
+  background: rgb(var(--background) / var(--surface-base-opacity));
+  border: 1px solid rgb(var(--border) / var(--surface-border-strength));
+  color: rgb(var(--foreground) / 0.92);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
-.glass-heavy {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+.surface-strong {
+  background: rgb(var(--background) / var(--surface-strong-opacity));
+  border: 1px solid rgb(var(--border) / calc(var(--surface-border-strength) + 0.05));
+  color: rgb(var(--foreground) / 0.97);
 }
 
-.glass-light {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.surface-light {
+  background: rgb(var(--background) / var(--surface-light-opacity));
+  border: 1px solid rgb(var(--border) / calc(var(--surface-border-strength) - 0.04));
+  color: rgb(var(--foreground) / 0.82);
 }
 
-/* 滚动条样式 */
+.theme-shadow {
+  box-shadow:
+    0 24px 60px rgb(var(--shadow-color) / calc(var(--shadow-strength) + 0.14)),
+    0 2px 18px rgb(0 0 0 / 0.18);
+}
+
+/* Utility elements */
+.stat-bar {
+  width: 42px;
+  border-radius: 20px;
+  background: rgb(var(--background) / calc(var(--surface-light-opacity) + 0.08));
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: inherit;
+  transition: height 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--primary) / 0.75),
+    rgb(var(--secondary) / 0.9)
+  );
+}
+
+.shortcut-card {
+  background: rgb(var(--background) / calc(var(--surface-light-opacity) + 0.08));
+  border: 1px solid rgb(var(--border) / calc(var(--surface-border-strength) - 0.02));
+  border-radius: 16px;
+  color: rgb(var(--foreground) / 0.86);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.shortcut-card:hover {
+  background: rgb(var(--background) / calc(var(--surface-strong-opacity) + 0.06));
+  border-color: rgb(var(--primary) / 0.35);
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 32px rgb(var(--shadow-color) / calc(var(--shadow-strength) + 0.18)),
+    0 0 18px rgb(var(--primary) / 0.25);
+}
+
+.search-bar {
+  background: rgb(var(--background) / calc(var(--surface-base-opacity) + 0.12));
+  border: 1px solid rgb(var(--border) / calc(var(--surface-border-strength) + 0.02));
+  border-radius: 24px;
+  padding: 12px 20px;
+  color: rgb(var(--foreground) / 0.9);
+  transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-bar:focus {
+  background: rgb(var(--background) / calc(var(--surface-strong-opacity) + 0.08));
+  border-color: rgb(var(--primary) / 0.45);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(var(--primary) / 0.18);
+}
+
+.clock-display {
+  font-size: clamp(4rem, 12vw, 8rem);
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: rgb(var(--foreground) / 0.92);
+}
+
+.night-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgb(var(--primary) / 0.18);
+  border: 1px solid rgb(var(--primary) / 0.32);
+  border-radius: 9999px;
+  color: rgb(var(--primary) / 0.92);
+  font-size: 0.9rem;
+}
+
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgb(var(--background) / 0.22);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(var(--foreground) / 0.15);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgb(var(--foreground) / 0.25);
 }
 
-/* 动画 */
+/* Animations */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -89,5 +233,15 @@
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-bg {
+    animation: none;
+  }
+
+  .animate-fade-in {
+    animation: none;
+  }
 }

@@ -1,89 +1,84 @@
 'use client';
 
-import { FileText, Brain, Palette, Search, Box, Settings } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { fadeInVariants } from '@/config/animation';
+import { Construction, Clock as ClockIcon, Code2, Wrench } from 'lucide-react';
 
 export default function DashboardPage() {
-  const router = useRouter();
-
-  const modules = [
-    { id: 'editor', name: 'Editor', icon: FileText, description: 'Code & Rich Text Editor', color: 'from-blue-500/20 to-cyan-500/20' },
-    { id: 'knowledge', name: 'Knowledge', icon: Brain, description: 'Knowledge Management', color: 'from-purple-500/20 to-pink-500/20' },
-    { id: 'theme', name: 'Theme', icon: Palette, description: 'Theme System', color: 'from-orange-500/20 to-red-500/20' },
-    { id: 'search', name: 'Search', icon: Search, description: 'Smart Search', color: 'from-green-500/20 to-teal-500/20' },
-    { id: 'plugins', name: 'Plugins', icon: Box, description: 'Extension System', color: 'from-indigo-500/20 to-purple-500/20' },
-    { id: 'settings', name: 'Settings', icon: Settings, description: 'App Settings', color: 'from-gray-500/20 to-gray-600/20' },
-  ];
-
-  const handleModuleClick = (moduleId: string) => {
-    router.push(`/dashboard/${moduleId}`);
-  };
-
   return (
-    <div className="p-8">
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">
-          <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Welcome to NAnning
-          </span>
-        </h1>
-        <p className="text-gray-400">
-          Choose a module to get started
-        </p>
-      </div>
-
-      {/* Modules Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {modules.map((module, index) => {
-          const Icon = module.icon;
-          return (
-            <button
-              key={module.id}
-              onClick={() => handleModuleClick(module.id)}
-              className="glass p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 text-left animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="flex items-start space-x-4">
-                <div className={`p-3 rounded-lg bg-gradient-to-br ${module.color}`}>
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-white mb-1">
-                    {module.name}
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    {module.description}
-                  </p>
-                </div>
+    <div className="h-full p-8">
+      <motion.div
+        variants={fadeInVariants}
+        initial="initial"
+        animate="animate"
+        className="h-full flex items-center justify-center"
+      >
+        <div className="text-center max-w-2xl">
+          <div className="mb-8 flex justify-center">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 flex items-center justify-center animate-pulse">
+                <Construction className="w-16 h-16 text-primary/70" />
               </div>
-            </button>
-          );
-        })}
-      </div>
+              <motion.div
+                className="absolute -top-2 -right-2"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+              >
+                <Wrench className="w-8 h-8 text-secondary/70" />
+              </motion.div>
+            </div>
+          </div>
 
-      {/* Quick Stats */}
-      <div className="mt-12 glass-heavy rounded-xl p-6">
-        <h2 className="text-xl font-semibold text-white mb-4">Quick Stats</h2>
-        <div className="grid grid-cols-4 gap-6">
-          <div>
-            <p className="text-3xl font-bold text-purple-400">0</p>
-            <p className="text-sm text-gray-400">Documents</p>
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            正在施工
+          </h1>
+
+          <p className="text-lg text-foreground/70 mb-8">
+            NAnning 系统正在全面升级中，敬请期待全新体验
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="feather-glass-panel p-4 rounded-lg text-foreground/80">
+              <ClockIcon className="w-6 h-6 text-primary/70 mb-2 mx-auto" />
+              <h3 className="text-sm font-medium text-foreground mb-1">效率时钟</h3>
+              <p className="text-xs text-foreground/60">时间结构重塑中</p>
+            </div>
+
+            <div className="feather-glass-panel p-4 rounded-lg text-foreground/80">
+              <Code2 className="w-6 h-6 text-secondary/70 mb-2 mx-auto" />
+              <h3 className="text-sm font-medium text-foreground mb-1">模块系统</h3>
+              <p className="text-xs text-foreground/60">10+ 功能模块陆续上线</p>
+            </div>
+
+            <div className="feather-glass-panel p-4 rounded-lg text-foreground/80">
+              <Construction className="w-6 h-6 text-accent/70 mb-2 mx-auto" />
+              <h3 className="text-sm font-medium text-foreground mb-1">体验优化</h3>
+              <p className="text-xs text-foreground/60">交互与视觉全面提升</p>
+            </div>
           </div>
-          <div>
-            <p className="text-3xl font-bold text-blue-400">0</p>
-            <p className="text-sm text-gray-400">Knowledge Bases</p>
+
+          <div className="w-full max-w-md mx-auto">
+            <div className="flex items-center justify-between text-xs text-foreground/60 mb-2">
+              <span>整体进度</span>
+              <span>15%</span>
+            </div>
+            <div className="h-2 bg-foreground/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-primary/80 via-secondary/70 to-accent/70"
+                initial={{ width: 0 }}
+                animate={{ width: '15%' }}
+                transition={{ duration: 1, delay: 0.5 }}
+              />
+            </div>
           </div>
-          <div>
-            <p className="text-3xl font-bold text-green-400">3</p>
-            <p className="text-sm text-gray-400">Themes</p>
-          </div>
-          <div>
-            <p className="text-3xl font-bold text-orange-400">0</p>
-            <p className="text-sm text-gray-400">Plugins</p>
+
+          <div className="mt-12 p-4 surface-light border border-border/25 rounded-lg">
+            <p className="text-xs text-foreground/70">
+              小提示：可以尝试切换不同模块，新的界面与主题系统正在逐步接入
+            </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
