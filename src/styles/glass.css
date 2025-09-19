@@ -1,19 +1,185 @@
-/* Glassmorphism surfaces driven by dynamic theme tokens */
+/* =============================================================================
+   Enhanced Feather-Glass System - 4-Level Transparency Hierarchy
+   Inspired by Anning's sophisticated glassmorphism design
+============================================================================= */
+
 :root {
+  /* Base glass variables */
   --glass-opacity: 0.22;
   --glass-blur: 18px;
   --glass-border-opacity: 0.18;
   --glass-shadow-strength: calc(var(--shadow-strength, 0.28) + 0.08);
+
+  /* 4-Level transparency system */
+  --glass-deco-opacity: 0.01;      /* Level 1: Decorative elements */
+  --glass-panel-opacity: 0.08;     /* Level 2: Panels & sidebars */
+  --glass-content-opacity: 0.25;   /* Level 3: Content areas */
+  --glass-modal-opacity: 0.75;     /* Level 4: Modals & overlays */
+
+  /* Enhanced blur levels */
+  --glass-blur-light: 12px;
+  --glass-blur-medium: 16px;
+  --glass-blur-heavy: 20px;
+  --glass-blur-ultra: 24px;
+
+  /* Shadow layers */
+  --shadow-ambient: 0 8px 32px;
+  --shadow-direct: 0 4px 16px;
+  --shadow-inset: inset 0 1px 0;
 }
 
 body.theme-light {
   --glass-shadow-strength: calc(var(--shadow-strength, 0.18) + 0.04);
+  --glass-highlight: rgba(255, 255, 255, 0.2);
 }
 
 body.theme-dark {
   --glass-shadow-strength: calc(var(--shadow-strength, 0.36) + 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.06);
 }
 
+/* =================
+   Level 1: Decorative Glass (2-5% opacity)
+   For decorative elements, cards, icons
+   ================= */
+.feather-glass-deco {
+  background: rgba(255, 255, 255, var(--glass-deco-opacity));
+  backdrop-filter: blur(var(--glass-blur-medium)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-medium)) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    var(--shadow-ambient) rgba(0, 0, 0, 0.06),
+    var(--shadow-inset) var(--glass-highlight);
+  border-radius: var(--radius-xl, 16px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feather-glass-deco:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow:
+    var(--shadow-ambient) rgba(0, 0, 0, 0.08),
+    var(--shadow-direct) rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    var(--shadow-inset) var(--glass-highlight);
+}
+
+[data-theme='dark'] .feather-glass-deco {
+  background: rgba(20, 20, 20, calc(var(--glass-deco-opacity) * 2));
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    var(--shadow-ambient) rgba(0, 0, 0, 0.3),
+    var(--shadow-inset) rgba(255, 255, 255, 0.03);
+}
+
+[data-theme='dark'] .feather-glass-deco:hover {
+  background: rgba(25, 25, 25, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    var(--shadow-ambient) rgba(0, 0, 0, 0.35),
+    var(--shadow-direct) rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    var(--shadow-inset) rgba(255, 255, 255, 0.05);
+}
+
+/* =================
+   Level 2: Panel Glass (8-12% opacity)
+   For sidebars, toolbars, navigation panels
+   ================= */
+.feather-glass-panel {
+  background: rgba(var(--background), var(--glass-panel-opacity));
+  backdrop-filter: blur(var(--glass-blur-medium)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-medium)) saturate(150%);
+  border: 1px solid rgba(var(--border), 0.15);
+  box-shadow:
+    0 4px 24px rgba(var(--shadow-color, 12 18 32), 0.08),
+    var(--shadow-inset) rgba(var(--foreground), 0.05);
+  border-radius: var(--radius-lg, 12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme='dark'] .feather-glass-panel {
+  background: rgba(var(--background), calc(var(--glass-panel-opacity) * 1.5));
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.15),
+    var(--shadow-inset) rgba(255, 255, 255, 0.02);
+}
+
+/* =================
+   Level 3: Content Glass (25-40% opacity)
+   For content areas, cards, important information
+   ================= */
+.feather-glass-content {
+  background: rgba(var(--background), var(--glass-content-opacity));
+  backdrop-filter: blur(var(--glass-blur-light)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-light)) saturate(140%);
+  border: 1px solid rgba(var(--border), 0.3);
+  box-shadow:
+    0 4px 20px rgba(var(--shadow-color, 12 18 32), 0.1),
+    var(--shadow-inset) rgba(var(--foreground), 0.08);
+  border-radius: var(--radius-lg, 12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feather-glass-content:hover {
+  background: rgba(var(--background), calc(var(--glass-content-opacity) + 0.1));
+  border-color: rgba(var(--border), 0.4);
+  box-shadow:
+    0 6px 24px rgba(var(--shadow-color, 12 18 32), 0.12),
+    var(--shadow-direct) rgba(var(--primary), 0.02),
+    var(--shadow-inset) rgba(var(--foreground), 0.1);
+}
+
+[data-theme='dark'] .feather-glass-content {
+  background: rgba(var(--background), calc(var(--glass-content-opacity) * 1.2));
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    var(--shadow-inset) rgba(255, 255, 255, 0.04);
+}
+
+/* =================
+   Level 4: Modal Glass (75-85% opacity)
+   For modals, popovers, tooltips
+   ================= */
+.feather-glass-modal {
+  background: rgba(var(--background), var(--glass-modal-opacity));
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(150%);
+  border: 1px solid rgba(var(--border), 0.3);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 10px 20px rgba(0, 0, 0, 0.1),
+    var(--shadow-inset) rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl, 16px);
+}
+
+[data-theme='dark'] .feather-glass-modal {
+  background: rgba(var(--background), calc(var(--glass-modal-opacity) * 0.95));
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 10px 20px rgba(0, 0, 0, 0.3),
+    var(--shadow-inset) rgba(255, 255, 255, 0.05);
+}
+
+/* Modal backdrop */
+.feather-glass-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+[data-theme='dark'] .feather-glass-modal-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* =================
+   Legacy .glass class - backward compatibility
+   ================= */
 .glass {
   background: rgb(var(--background) / calc(var(--glass-opacity) + 0.32));
   backdrop-filter: blur(var(--glass-blur));
@@ -68,20 +234,54 @@ body.theme-dark {
     transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* =================
+   Enhanced Sidebar Glass
+   ================= */
 .feather-glass-sidebar {
-  backdrop-filter: blur(calc(var(--glass-blur) + 6px));
-  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 6px));
+  backdrop-filter: blur(var(--glass-blur-ultra)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-ultra)) saturate(180%);
   background: linear-gradient(
-    140deg,
-    rgb(var(--background) / calc(var(--glass-opacity) + 0.38)) 0%,
-    rgb(var(--background) / calc(var(--glass-opacity) + 0.28)) 100%
+    180deg,
+    rgba(var(--background), calc(var(--glass-panel-opacity) * 1.2)) 0%,
+    rgba(var(--background), calc(var(--glass-panel-opacity) * 0.8)) 100%
   );
-  border-right: 1px solid rgb(var(--border) / calc(var(--glass-border-opacity) + 0.1));
+  border-right: 1px solid rgba(var(--border), 0.3);
   box-shadow:
-    0 0 60px rgb(var(--shadow-color, 12 18 32) / calc(var(--glass-shadow-strength) + 0.18)),
-    inset 0 1px 0 rgb(var(--foreground) / 0.06),
-    inset 0 -1px 0 rgb(var(--foreground) / 0.04);
-  color: rgb(var(--foreground) / 0.92);
+    4px 0 32px rgba(0, 0, 0, 0.1),
+    inset -1px 0 0 rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: rgb(var(--foreground) / 0.95);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Sidebar edge glow effect */
+.feather-glass-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(var(--primary), 0.3) 50%,
+    transparent 100%
+  );
+  opacity: 0.6;
+}
+
+[data-theme='dark'] .feather-glass-sidebar {
+  background: linear-gradient(
+    180deg,
+    rgba(var(--background), calc(var(--glass-panel-opacity) * 1.5)) 0%,
+    rgba(var(--background), calc(var(--glass-panel-opacity) * 1)) 100%
+  );
+  box-shadow:
+    4px 0 32px rgba(0, 0, 0, 0.3),
+    inset -1px 0 0 rgba(255, 255, 255, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .feather-glass-panel {
@@ -107,8 +307,11 @@ body.theme-dark {
   box-shadow: 0 12px 28px rgb(var(--shadow-color, 12 18 32) / calc(var(--glass-shadow-strength) + 0.12));
 }
 
+/* =================
+   Interactive States
+   ================= */
 .feather-glass-hover {
-  transition: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .feather-glass-hover:hover {
@@ -116,21 +319,117 @@ body.theme-dark {
   border-color: rgb(var(--primary) / 0.4);
   box-shadow:
     0 20px 48px rgb(var(--shadow-color, 12 18 32) / calc(var(--glass-shadow-strength) + 0.26)),
-    0 0 32px rgb(var(--primary) / 0.3);
-  transform: translateY(-2px);
+    0 0 32px rgb(var(--primary) / 0.3),
+    var(--shadow-inset) rgba(var(--primary), 0.1);
+  transform: translateY(-2px) scale(1.01);
 }
 
+/* Navigation item glass */
+.feather-glass-nav {
+  background: rgba(var(--background), 0.35);
+  backdrop-filter: blur(var(--glass-blur-light)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-light)) saturate(130%);
+  border: 1px solid rgba(var(--border), 0.25);
+  transition: all 0.2s ease;
+}
+
+.feather-glass-nav:hover {
+  background: rgba(var(--background), 0.5);
+  border-color: rgba(var(--border), 0.4);
+  transform: translateX(2px);
+}
+
+.feather-glass-nav.active {
+  background: rgba(var(--primary), 0.15);
+  border-color: rgba(var(--primary), 0.4);
+  box-shadow:
+    0 0 0 1px rgba(var(--primary), 0.2),
+    var(--shadow-inset) rgba(var(--primary), 0.1);
+}
+
+/* =================
+   Active States & Special Effects
+   ================= */
 .feather-glass-active {
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, rgb(var(--primary) / 1) 70%, transparent) 0%,
-    color-mix(in srgb, rgb(var(--secondary) / 1) 55%, rgb(var(--accent) / 1) 45%) 100%
+    rgba(var(--primary), 0.25) 0%,
+    rgba(var(--secondary), 0.15) 100%
   );
-  border-color: rgb(var(--primary) / 0.6);
+  border-color: rgba(var(--primary), 0.5);
   box-shadow:
-    0 0 32px rgb(var(--primary) / 0.45),
-    inset 0 1px 0 rgb(var(--foreground) / 0.12);
+    0 0 24px rgba(var(--primary), 0.3),
+    0 4px 12px rgba(var(--primary), 0.2),
+    var(--shadow-inset) rgba(var(--primary), 0.15);
   color: rgb(var(--foreground) / 1);
+}
+
+/* Glow effect for important elements */
+.feather-glass-glow {
+  position: relative;
+}
+
+.feather-glass-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    transparent 0deg,
+    rgba(var(--primary), 0.1) 60deg,
+    rgba(var(--secondary), 0.1) 120deg,
+    rgba(var(--accent), 0.1) 180deg,
+    transparent 240deg,
+    rgba(var(--primary), 0.05) 300deg,
+    transparent 360deg
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.feather-glass-glow:hover::before {
+  opacity: 1;
+  animation: rotate 4s linear infinite;
+}
+
+/* Button variations */
+.feather-glass-button {
+  background: rgba(var(--background), 0.5);
+  backdrop-filter: blur(10px) saturate(130%);
+  -webkit-backdrop-filter: blur(10px) saturate(130%);
+  border: 1px solid rgba(var(--border), 0.3);
+  color: rgb(var(--foreground) / 0.9);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.feather-glass-button:hover {
+  background: rgba(var(--background), 0.7);
+  border-color: rgba(var(--border), 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feather-glass-button-primary {
+  background: rgba(var(--primary), 0.8);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(var(--primary), 0.9);
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.feather-glass-button-primary:hover {
+  background: rgba(var(--primary), 0.9);
+  border-color: rgb(var(--primary) / 1);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 20px rgba(var(--primary), 0.4),
+    0 2px 8px rgba(var(--primary), 0.3);
 }
 
 body.theme-light .feather-glass,
@@ -160,6 +459,14 @@ body.theme-light .feather-glass-active {
   mix-blend-mode: screen;
 }
 
+/* =================
+   Animations
+   ================= */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes glass-shimmer {
   0% {
     background-position: -200% 0;
@@ -169,15 +476,104 @@ body.theme-light .feather-glass-active {
   }
 }
 
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 20px rgba(var(--primary), 0.2),
+      0 0 40px rgba(var(--primary), 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(var(--primary), 0.3),
+      0 0 60px rgba(var(--primary), 0.15);
+  }
+}
+
+/* =================
+   Decorative Elements
+   ================= */
+.glass-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.05) 40%,
+    transparent 70%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.glass-orb-primary {
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(var(--primary), 0.3),
+    rgba(var(--primary), 0.1) 40%,
+    transparent 70%
+  );
+  animation: float 20s ease-in-out infinite;
+}
+
+.glass-orb-secondary {
+  background: radial-gradient(
+    circle at 70% 70%,
+    rgba(var(--secondary), 0.3),
+    rgba(var(--secondary), 0.1) 40%,
+    transparent 70%
+  );
+  animation: float 25s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+/* Noise overlay for texture */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: var(--noise-opacity, 0.03);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' /%3E%3C/svg%3E");
+}
+
+/* =================
+   Accessibility
+   ================= */
 @media (prefers-reduced-motion: reduce) {
-  .feather-glass,
-  .feather-glass-hover,
+  .feather-glass-deco,
   .feather-glass-panel,
-  .feather-glass-sidebar {
+  .feather-glass-content,
+  .feather-glass-modal,
+  .feather-glass-sidebar,
+  .feather-glass-hover,
+  .feather-glass-nav,
+  .feather-glass-button {
     transition: none;
+    animation: none;
   }
 
-  .feather-glass-shimmer {
+  .glass-orb-primary,
+  .glass-orb-secondary {
     animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .feather-glass-deco,
+  .feather-glass-panel,
+  .feather-glass-content {
+    border-width: 2px;
   }
 }

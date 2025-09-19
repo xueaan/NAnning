@@ -141,13 +141,13 @@ export function ThemePanel({ open, onClose }: ThemePanelProps) {
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span>背景叠加</span>
+              <span>渐变强度</span>
               <span>{overlayOpacity}%</span>
             </div>
             <input
               type="range"
               min={0}
-              max={80}
+              max={100}
               value={overlayOpacity}
               onChange={(e) => updateOverlayOpacity(Number(e.target.value))}
               className="w-full accent-primary"

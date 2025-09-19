@@ -53,8 +53,8 @@ export const useThemeStore = create<ThemeStore>()(
       gradientAngle: 135,
       gradientStops: 24,
       blendIntensity: 100,
-      overlayOpacity: 12,
-      noiseOpacity: 0,
+      overlayOpacity: 60, // Default gradient opacity 60%
+      noiseOpacity: 3, // Default noise 3%
 
       // Set complete theme
       setTheme: (theme) => {
@@ -67,10 +67,9 @@ export const useThemeStore = create<ThemeStore>()(
         // Apply theme to DOM
         if (typeof window !== 'undefined') {
           ThemeEngine.applyTheme(theme);
-          // keep overlay variables in sync
+          // keep gradient and noise variables in sync
           const root = document.documentElement;
-          root.style.setProperty('--bg-overlay-color', '0 0 0');
-          root.style.setProperty('--bg-overlay-opacity', (get().overlayOpacity / 100).toString());
+          root.style.setProperty('--bg-gradient-opacity', (get().overlayOpacity / 100).toString());
           root.style.setProperty('--noise-opacity', (get().noiseOpacity / 100).toString());
         }
       },
@@ -102,7 +101,7 @@ export const useThemeStore = create<ThemeStore>()(
         if (typeof window !== 'undefined') {
           ThemeEngine.applyTheme(theme);
           const root = document.documentElement;
-          root.style.setProperty('--bg-overlay-opacity', (get().overlayOpacity / 100).toString());
+          root.style.setProperty('--bg-gradient-opacity', (get().overlayOpacity / 100).toString());
           root.style.setProperty('--noise-opacity', (get().noiseOpacity / 100).toString());
         }
       },
@@ -116,9 +115,11 @@ export const useThemeStore = create<ThemeStore>()(
 
         const theme = get().currentTheme;
         if (typeof window !== 'undefined') {
-          ThemeEngine.applyTheme(theme);
+          // Apply theme to update the gradient with new angle
+          ThemeEngine.applyTheme(theme, false); // No animation for slider changes
+          // Keep gradient opacity in sync
           const root = document.documentElement;
-          root.style.setProperty('--bg-overlay-opacity', (get().overlayOpacity / 100).toString());
+          root.style.setProperty('--bg-gradient-opacity', (get().overlayOpacity / 100).toString());
           root.style.setProperty('--noise-opacity', (get().noiseOpacity / 100).toString());
         }
       },
@@ -147,25 +148,26 @@ export const useThemeStore = create<ThemeStore>()(
           state.blendIntensity = intensity;
           // Adjust glass opacity based on intensity
           state.currentTheme.glass.opacity = 0.1 + (intensity / 100) * 0.3;
-          // Also sync background overlay a bit so users see effect
-          state.overlayOpacity = Math.round((intensity / 100) * 35); // up to 0.35
+          // Also sync gradient opacity a bit so users see effect
+          state.overlayOpacity = Math.round((intensity / 100) * 60); // up to 0.60
         });
 
         const theme = get().currentTheme;
         if (typeof window !== 'undefined') {
           ThemeEngine.applyTheme(theme);
           const root = document.documentElement;
-          root.style.setProperty('--bg-overlay-opacity', (get().overlayOpacity / 100).toString());
+          root.style.setProperty('--bg-gradient-opacity', (get().overlayOpacity / 100).toString());
         }
       },
 
-      // Update background overlay opacity (readability)
+      // Update background overlay opacity (gradient visibility)
       updateOverlayOpacity: (v) => {
         set((state) => {
           state.overlayOpacity = Math.max(0, Math.min(100, v));
         });
         if (typeof window !== 'undefined') {
-          document.documentElement.style.setProperty('--bg-overlay-opacity', (get().overlayOpacity / 100).toString());
+          // This controls the gradient visibility, not the dark overlay
+          document.documentElement.style.setProperty('--bg-gradient-opacity', (get().overlayOpacity / 100).toString());
         }
       },
 
@@ -214,9 +216,10 @@ export const useThemeStore = create<ThemeStore>()(
         if (typeof window !== 'undefined') {
           ThemeEngine.applyTheme(theme);
           const root = document.documentElement;
-          // default overlay color to black; can be extended later
-          root.style.setProperty('--bg-overlay-color', '0 0 0');
-          root.style.setProperty('--bg-overlay-opacity', (get().overlayOpacity / 100).toString());
+          // Set gradient opacity based on mode and user control
+          const isLight = mode === 'light';
+          // Use user-controlled opacity value
+          root.style.setProperty('--bg-gradient-opacity', (get().overlayOpacity / 100).toString());
           root.style.setProperty('--noise-opacity', (get().noiseOpacity / 100).toString());
         }
       },
@@ -228,8 +231,8 @@ export const useThemeStore = create<ThemeStore>()(
           state.gradientAngle = 135;
           state.gradientStops = 24;
           state.blendIntensity = 100;
-          state.overlayOpacity = 12;
-          state.noiseOpacity = 0;
+          state.overlayOpacity = 60; // Reset to 60% gradient opacity
+          state.noiseOpacity = 3; // Reset to 3% noise
         });
       }
     })),

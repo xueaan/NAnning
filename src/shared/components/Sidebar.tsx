@@ -76,7 +76,7 @@ export function Sidebar() {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          h-screen flex flex-col feather-glass-sidebar
+          h-screen flex flex-col feather-glass-sidebar relative overflow-hidden
           fixed left-0 top-0 z-40
           ${isMobile && isSidebarCollapsed ? '-translate-x-full' : 'translate-x-0'}
           transition-transform duration-300
@@ -87,7 +87,16 @@ export function Sidebar() {
             : `${ANIMATION_CONFIG.sidebar.expandedWidth}px`
         }}
       >
-        <div className="p-4 flex items-center justify-between border-b border-border/25 text-foreground/80">
+        {/* Gradient overlay for depth */}
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-secondary/10" />
+        </div>
+
+        {/* Edge glow effect */}
+        <div className="absolute top-0 right-0 bottom-0 w-px bg-gradient-to-b from-transparent via-primary/30 to-transparent opacity-60" />
+        <div className="p-4 flex items-center justify-between border-b border-border/25 text-foreground/80 relative">
+          {/* Header glow effect */}
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
           <motion.div
             className="flex items-center gap-3"
             animate={{ justifyContent: effectiveCollapsed ? 'center' : 'flex-start' }}
@@ -140,22 +149,36 @@ export function Sidebar() {
                       w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
                       transition-all relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
                       ${isActive
-                        ? 'feather-glass-active text-foreground'
-                        : 'hover:bg-primary/10 text-foreground/60 hover:text-foreground'
+                        ? 'feather-glass-active text-foreground shadow-lg'
+                        : 'feather-glass-nav hover:feather-glass-hover text-foreground/60 hover:text-foreground'
                       }
                     `}
                   >
                     {isActive && (
-                      <motion.div
-                        layoutId="activeIndicator"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-secondary rounded-r-full"
-                      />
+                      <>
+                        <motion.div
+                          layoutId="activeIndicator"
+                          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary to-secondary rounded-r-full shadow-glow"
+                          style={{
+                            boxShadow: '0 0 12px rgba(var(--primary), 0.5)'
+                          }}
+                        />
+                        {/* Active item glow */}
+                        <div className="absolute inset-0 rounded-lg opacity-30">
+                          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 blur-xl" />
+                        </div>
+                      </>
                     )}
 
                     <div className={`
-                      flex items-center justify-center text-inherit
+                      flex items-center justify-center text-inherit z-10 relative
                       ${effectiveCollapsed ? 'w-full' : 'w-5'}
-                    `}>
+                      ${isActive ? 'drop-shadow-glow' : ''}
+                    `}
+                      style={{
+                        filter: isActive ? 'drop-shadow(0 0 4px rgba(var(--primary), 0.5))' : undefined
+                      }}
+                    >
                       <Icon className="w-5 h-5" strokeWidth={1.5} />
                     </div>
 
@@ -213,8 +236,9 @@ export function Sidebar() {
                     <span>今日任务</span>
                     <span className="font-medium text-foreground/70">0/0</span>
                   </div>
-                  <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary/80 to-secondary/70 w-0"></div>
+                  <div className="h-1 bg-foreground/10 rounded-full overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 blur-sm" />
+                    <div className="h-full bg-gradient-to-r from-primary/80 to-secondary/70 w-0 relative shadow-sm"></div>
                   </div>
                 </motion.div>
               )}
@@ -223,25 +247,33 @@ export function Sidebar() {
         </div>
 
         <div className={`
-          flex border-t border-border/20
+          flex border-t border-border/20 relative
           ${effectiveCollapsed ? 'flex-col' : 'flex-row'}
         `}>
+          {/* Bottom section glow */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
           <button
-            className="flex-1 p-3 text-foreground/60 hover:text-foreground hover:bg-primary/10 transition-all flex items-center justify-center gap-2"
+            className="flex-1 p-3 text-foreground/60 hover:text-foreground hover:bg-primary/10 transition-all flex items-center justify-center gap-2 relative group"
             title="设置"
           >
-            <Settings className="w-4 h-4" strokeWidth={1.5} />
-            {!effectiveCollapsed && <span className="text-xs">设置</span>}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+            </div>
+            <Settings className="w-4 h-4 relative z-10" strokeWidth={1.5} />
+            {!effectiveCollapsed && <span className="text-xs relative z-10">设置</span>}
           </button>
 
           <div className={`relative flex-1 ${effectiveCollapsed ? 'w-full' : ''}`}>
             <button
-              className="w-full p-3 text-foreground/60 hover:text-foreground hover:bg-primary/10 transition-all flex items-center justify-center gap-2"
+              className="w-full p-3 text-foreground/60 hover:text-foreground hover:bg-primary/10 transition-all flex items-center justify-center gap-2 relative group"
               title="主题"
               onClick={() => setShowThemeMenu((prev) => !prev)}
             >
-              <Palette className="w-4 h-4" strokeWidth={1.5} />
-              {!effectiveCollapsed && <span className="text-xs">主题</span>}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent" />
+              </div>
+              <Palette className="w-4 h-4 relative z-10" strokeWidth={1.5} />
+              {!effectiveCollapsed && <span className="text-xs relative z-10">主题</span>}
             </button>
 
             <AnimatePresence>

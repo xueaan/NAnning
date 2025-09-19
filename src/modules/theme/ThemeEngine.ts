@@ -2,6 +2,63 @@ import { GradientConfig, ColorStop, Theme } from './types';
 
 export class ThemeEngine {
   /**
+   * Preset gradient themes inspired by Anning's design
+   */
+  static readonly PRESET_GRADIENTS = {
+    aurora: {
+      angle: 135,
+      stops: [
+        { color: '#667eea', position: 0 },
+        { color: '#f093fb', position: 50 },
+        { color: '#f5576c', position: 100 }
+      ]
+    },
+    sunset: {
+      angle: 120,
+      stops: [
+        { color: '#ff6b6b', position: 0 },
+        { color: '#ffa500', position: 33 },
+        { color: '#ff7b9c', position: 66 },
+        { color: '#c77dff', position: 100 }
+      ]
+    },
+    ocean: {
+      angle: 160,
+      stops: [
+        { color: '#2e3192', position: 0 },
+        { color: '#1bffff', position: 50 },
+        { color: '#00a8e8', position: 100 }
+      ]
+    },
+    forest: {
+      angle: 145,
+      stops: [
+        { color: '#134e4a', position: 0 },
+        { color: '#059669', position: 50 },
+        { color: '#34d399', position: 100 }
+      ]
+    },
+    midnight: {
+      angle: 135,
+      stops: [
+        { color: '#1a1a2e', position: 0 },
+        { color: '#16213e', position: 33 },
+        { color: '#0f3460', position: 66 },
+        { color: '#533483', position: 100 }
+      ]
+    }
+  };
+
+  /**
+   * Glass opacity levels matching Anning's 4-level system
+   */
+  static readonly GLASS_LEVELS = {
+    deco: { opacity: 0.01, blur: 15, borderOpacity: 0.08 },
+    panel: { opacity: 0.08, blur: 16, borderOpacity: 0.15 },
+    content: { opacity: 0.25, blur: 12, borderOpacity: 0.3 },
+    modal: { opacity: 0.75, blur: 20, borderOpacity: 0.3 }
+  };
+  /**
    * 生成 CSS 渐变字符串
    */
   static generateGradientCSS(config: GradientConfig): string {
@@ -139,6 +196,10 @@ export class ThemeEngine {
     // 设置渐变背景
     root.style.setProperty('--gradient', this.generateGradientCSS(theme.gradient));
 
+    // 根据模式设置正确的颜色变量
+    const isLight = theme.mode === 'light';
+    const colors = isLight ? this.getLightModeColors(theme.colors) : theme.colors;
+
     // 同步颜色变量（RGB 三元组 + 十六进制备用）
     const toTriplet = (hex: string) => {
       const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -149,15 +210,50 @@ export class ThemeEngine {
       return `${r} ${g} ${b}`;
     };
 
-    Object.entries(theme.colors).forEach(([key, value]) => {
+    Object.entries(colors).forEach(([key, value]) => {
       root.style.setProperty(`--${key}`, toTriplet(value));
       root.style.setProperty(`--color-${key}`, value);
     });
 
+    // 根据模式调整玻璃参数
+    const glassConfig = isLight ? {
+      opacity: 0.35,
+      blur: 12,
+      borderOpacity: 0.25
+    } : theme.glass;
+
     // 同步玻璃拟态参数
-    root.style.setProperty('--glass-opacity', theme.glass.opacity.toString());
-    root.style.setProperty('--glass-blur', `${theme.glass.blur}px`);
-    root.style.setProperty('--glass-border-opacity', theme.glass.borderOpacity.toString());
+    root.style.setProperty('--glass-opacity', glassConfig.opacity.toString());
+    root.style.setProperty('--glass-blur', `${glassConfig.blur}px`);
+    root.style.setProperty('--glass-border-opacity', glassConfig.borderOpacity.toString());
+
+    // 设置 4 级玻璃透明度系统（根据模式调整）
+    const glassLevels = isLight ? {
+      deco: { opacity: 0.05, blur: 12, borderOpacity: 0.12 },
+      panel: { opacity: 0.15, blur: 14, borderOpacity: 0.2 },
+      content: { opacity: 0.35, blur: 10, borderOpacity: 0.35 },
+      modal: { opacity: 0.85, blur: 18, borderOpacity: 0.35 }
+    } : this.GLASS_LEVELS;
+
+    root.style.setProperty('--glass-deco-opacity', glassLevels.deco.opacity.toString());
+    root.style.setProperty('--glass-panel-opacity', glassLevels.panel.opacity.toString());
+    root.style.setProperty('--glass-content-opacity', glassLevels.content.opacity.toString());
+    root.style.setProperty('--glass-modal-opacity', glassLevels.modal.opacity.toString());
+
+    // 设置模糊级别
+    root.style.setProperty('--glass-blur-light', '12px');
+    root.style.setProperty('--glass-blur-medium', '16px');
+    root.style.setProperty('--glass-blur-heavy', '20px');
+    root.style.setProperty('--glass-blur-ultra', '24px');
+
+    // Don't override user-controlled gradient opacity here
+    // Just set default noise levels based on mode
+    if (!root.style.getPropertyValue('--bg-gradient-opacity')) {
+      root.style.setProperty('--bg-gradient-opacity', isLight ? '0.3' : '0.6');
+    }
+    if (!root.style.getPropertyValue('--noise-opacity')) {
+      root.style.setProperty('--noise-opacity', isLight ? '0.04' : '0.08');
+    }
 
     // 切换 body 上的 theme class
     document.body.className = document.body.className
@@ -168,6 +264,27 @@ export class ThemeEngine {
     if (animate && typeof window !== 'undefined') {
       setTimeout(() => this.endTransition(), 600);
     }
+  }
+
+  /**
+   * 获取浅色模式颜色
+   */
+  private static getLightModeColors(darkColors: any): any {
+    // 如果已经是浅色配置，直接返回
+    if (darkColors.background && darkColors.background.startsWith('#F') || darkColors.background?.startsWith('#f')) {
+      return darkColors;
+    }
+
+    // 转换为浅色模式
+    return {
+      primary: darkColors.primary,
+      secondary: darkColors.secondary,
+      accent: darkColors.accent,
+      background: '#FFFFFF',
+      foreground: '#1A1A1A',
+      muted: '#F4F4F5',
+      border: '#E4E4E7'
+    };
   }
 
   /**
@@ -219,6 +336,55 @@ export class ThemeEngine {
     return gradient.stops
       .sort((a, b) => a.position - b.position)
       .map(stop => stop.color);
+  }
+
+  /**
+   * 生成动态渐变动画 CSS
+   */
+  static generateAnimatedGradient(gradients: GradientConfig[], duration: number = 10): string {
+    const keyframeName = `gradient-shift-${Date.now()}`;
+    const percentageStep = 100 / (gradients.length - 1);
+
+    const keyframes = gradients.map((gradient, index) => {
+      const percentage = index * percentageStep;
+      return `${percentage}% { background: ${this.generateGradientCSS(gradient)}; }`;
+    }).join(' ');
+
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ${keyframeName} {
+        ${keyframes}
+      }
+      .animated-gradient {
+        animation: ${keyframeName} ${duration}s ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return keyframeName;
+  }
+
+  /**
+   * 创建渐变混合效果
+   */
+  static blendGradients(gradient1: GradientConfig, gradient2: GradientConfig, factor: number = 0.5): GradientConfig {
+    const blendedStops: ColorStop[] = [];
+    const maxStops = Math.max(gradient1.stops.length, gradient2.stops.length);
+
+    for (let i = 0; i < maxStops; i++) {
+      const stop1 = gradient1.stops[i] || gradient1.stops[gradient1.stops.length - 1];
+      const stop2 = gradient2.stops[i] || gradient2.stops[gradient2.stops.length - 1];
+
+      blendedStops.push({
+        color: this.interpolateColor(stop1.color, stop2.color, factor),
+        position: stop1.position * (1 - factor) + stop2.position * factor
+      });
+    }
+
+    return {
+      angle: gradient1.angle * (1 - factor) + gradient2.angle * factor,
+      stops: blendedStops
+    };
   }
 
   /**
@@ -290,6 +456,34 @@ export class ThemeEngine {
       secondary: hsl2hex((hsl.h + 120) % 360, hsl.s, hsl.l),
       accent: hsl2hex((hsl.h + 240) % 360, hsl.s, hsl.l)
     };
+  }
+
+  /**
+   * 应用预设主题
+   */
+  static applyPresetTheme(presetName: keyof typeof ThemeEngine.PRESET_GRADIENTS, mode: 'light' | 'dark' = 'dark'): void {
+    const gradient = this.PRESET_GRADIENTS[presetName];
+    if (!gradient) return;
+
+    const colors = this.extractPalette(gradient);
+    const complementary = this.generateComplementaryColors(colors[0]);
+
+    const theme: Theme = {
+      id: `preset-${presetName}`,
+      name: presetName.charAt(0).toUpperCase() + presetName.slice(1),
+      mode,
+      gradient,
+      colors: {
+        ...complementary,
+        background: mode === 'dark' ? '#0a0a0f' : '#ffffff',
+        foreground: mode === 'dark' ? '#e5e5e7' : '#1a1a1a',
+        muted: mode === 'dark' ? '#27272a' : '#f4f4f5',
+        border: mode === 'dark' ? '#3f3f46' : '#e4e4e7'
+      },
+      glass: mode === 'dark' ? this.GLASS_LEVELS.panel : this.GLASS_LEVELS.content
+    };
+
+    this.applyTheme(theme, true);
   }
 }
 

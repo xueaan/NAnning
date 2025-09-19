@@ -6,6 +6,7 @@
 
 /* Theme tokens hydrated by ThemeEngine */
 :root {
+  /* Default dark theme colors */
   --background: 18 18 24;
   --foreground: 236 236 244;
   --primary: 147 51 234;
@@ -14,6 +15,7 @@
   --muted: 40 41 55;
   --border: 72 74 96;
 
+  /* Glass system defaults */
   --glass-opacity: 0.22;
   --glass-blur: 18px;
   --glass-border-opacity: 0.18;
@@ -28,16 +30,72 @@
 
   --accent-soft: color-mix(in srgb, rgb(var(--accent) / 1) 20%, transparent);
   --accent-ring: color-mix(in srgb, rgb(var(--primary) / 1) 55%, rgb(var(--secondary) / 1) 45%);
+
+  /* Overlay defaults */
+  --bg-overlay-opacity: 0.15;
+  --noise-opacity: 0.03;
 }
 
+/* Light theme overrides */
 body.theme-light {
-  --shadow-strength: 0.18;
-  --shadow-color: 32 38 68;
+  /* Light theme colors */
+  --background: 255 255 255;
+  --foreground: 26 26 26;
+  --primary: 147 51 234;
+  --secondary: 240 147 251;
+  --accent: 245 87 108;
+  --muted: 244 244 245;
+  --border: 228 228 231;
+
+  /* Light theme shadows */
+  --shadow-strength: 0.12;
+  --shadow-color: 0 0 0;
+
+  /* Light theme glass adjustments */
+  --glass-opacity: 0.35;
+  --glass-blur: 12px;
+  --glass-border-opacity: 0.25;
+
+  /* Light theme overlay */
+  --bg-overlay-opacity: 0.05;
+  --noise-opacity: 0.02;
+
+  /* Adjusted surface opacities for light mode */
+  --surface-base-opacity: 0.65;
+  --surface-strong-opacity: 0.75;
+  --surface-light-opacity: 0.45;
+  --surface-border-strength: 0.35;
 }
 
+/* Dark theme explicit values */
 body.theme-dark {
+  /* Dark theme colors */
+  --background: 18 18 24;
+  --foreground: 236 236 244;
+  --primary: 147 51 234;
+  --secondary: 240 147 251;
+  --accent: 245 87 108;
+  --muted: 40 41 55;
+  --border: 72 74 96;
+
+  /* Dark theme shadows */
   --shadow-strength: 0.36;
-  --shadow-color: 3 6 18;
+  --shadow-color: 0 0 0;
+
+  /* Dark theme glass */
+  --glass-opacity: 0.15;
+  --glass-blur: 18px;
+  --glass-border-opacity: 0.15;
+
+  /* Dark theme overlay */
+  --bg-overlay-opacity: 0.2;
+  --noise-opacity: 0.04;
+
+  /* Dark surface opacities */
+  --surface-base-opacity: 0.35;
+  --surface-strong-opacity: 0.45;
+  --surface-light-opacity: 0.25;
+  --surface-border-strength: 0.25;
 }
 
 /* Resets */
@@ -65,9 +123,19 @@ body {
   color: rgb(var(--foreground) / 1);
 }
 
-/* Gradient backdrop */
+/* Gradient backdrop with pseudo-elements - Anning style */
 .gradient-bg {
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: rgb(var(--background));
+}
+
+/* Gradient background layer - bottom layer */
+.gradient-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: var(
     --gradient,
     linear-gradient(
@@ -82,9 +150,60 @@ body {
   );
   background-size: 220% 220%;
   animation: gradientShift 22s ease-in-out infinite;
-  color: inherit;
-  overflow: hidden;
-  isolation: isolate;
+  opacity: var(--bg-gradient-opacity, 0.6);
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Noise texture layer - on top of gradient */
+.gradient-bg.with-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0 .5 .5 .7 .7 .9 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+  background-size: 25px 25px;
+  mix-blend-mode: multiply;
+  opacity: var(--noise-opacity, 0.08);
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  z-index: 0;
+  filter: contrast(0.8) brightness(1.4) saturate(0);
+}
+
+/* Light mode adjustments */
+body.theme-light .gradient-bg::before {
+  background: var(
+    --gradient,
+    linear-gradient(
+      135deg,
+      #ffeeff 0%,
+      #fff0f5 20%,
+      #f0f5ff 40%,
+      #f5f0ff 60%,
+      #fff5f0 80%,
+      #f8f8ff 100%
+    )
+  );
+  opacity: var(--bg-gradient-opacity, 0.3);
+}
+
+body.theme-light .gradient-bg.with-noise::after {
+  mix-blend-mode: soft-light;
+  opacity: var(--noise-opacity, 0.04);
+  filter: contrast(2) brightness(0.5) saturate(0);
+}
+
+/* Dark mode adjustments */
+body.theme-dark .gradient-bg::before {
+  opacity: calc(var(--bg-gradient-opacity, 0.6) * 0.8);
+  filter: brightness(0.7) saturate(0.8);
+}
+
+body.theme-dark .gradient-bg.with-noise::after {
+  mix-blend-mode: overlay;
+  opacity: var(--noise-opacity, 0.1);
+  filter: contrast(2) brightness(0.3) saturate(0);
 }
 
 .theme-switch-wrapper {
@@ -236,8 +355,21 @@ body {
   animation: fadeIn 0.4s ease-out both;
 }
 
+/* Decorative gradient utilities */
+.bg-gradient-radial {
+  background: radial-gradient(circle at center, var(--tw-gradient-stops));
+}
+
+.blur-3xl {
+  filter: blur(64px);
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .gradient-bg {
+  .gradient-bg::before {
     animation: none;
   }
 
